@@ -53,7 +53,18 @@ with tab1:
         car_type = st.selectbox("Type", type_options)
         if car_type == GENERIC_TYPE_FALLBACK:
             car_type = st.text_input("Ketik Type manual", value=make)
-        year = st.number_input("Year", min_value=1980, max_value=2026, value=2018, step=1)
+        year = st.number_input(
+            "Year",
+            min_value=1980,
+            max_value=2022,
+            value=2018,
+            step=1,
+            help=(
+                "Model dilatih dengan data scrape tahun 2021 (reference_year=2021). "
+                "Tahun 2021-2022 dianggap 'mobil baru' (usia 0), jadi tidak ada "
+                "bedanya prediksi antara tahun 2021 dan tahun setelahnya."
+            ),
+        )
         origin = st.selectbox("Origin", ORIGIN_OPTS)
         color = st.selectbox("Color", COLOR_OPTS)
         options_level = st.selectbox("Options", OPTIONS_OPTS, index=1)
