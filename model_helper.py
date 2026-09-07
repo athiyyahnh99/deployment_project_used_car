@@ -2,16 +2,28 @@
 Load model (joblib) dan jalankan prediksi harga mobil.
 """
 
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 # WAJIB di-import sebelum joblib.load: pipeline yang di-pickle menyimpan
-# referensi ke class CarAgeTransformer & FrequencyEncoder. Tanpa ini,
-# joblib.load akan raise AttributeError.
+# referensi ke class CarAgeTransformer & FrequencyEncoder.
 from custom_transformers import CarAgeTransformer, FrequencyEncoder  # noqa: F401
 import joblib
+
+# --- Workaround khusus ---
+# Waktu training, CarAgeTransformer & FrequencyEncoder didefinisikan langsung
+# di cell notebook (bukan di-import dari custom_transformers.py), jadi
+# joblib.dump menyimpan referensi module-nya sebagai "__main__" (nama module
+# notebook saat itu). Kalau di-load dari script lain, "__main__" merujuk ke
+# script itu sendiri (mis. streamlit_app.py) yang tidak punya definisi class
+# tersebut -> AttributeError saat unpickling.
+# Fix: suntikkan class ini ke sys.modules['__main__'] SEBELUM joblib.load()
+# supaya pickle bisa menemukannya lewat "__main__.CarAgeTransformer" dkk.
+sys.modules["__main__"].CarAgeTransformer = CarAgeTransformer
+sys.modules["__main__"].FrequencyEncoder = FrequencyEncoder
 
 MODEL_PATH = Path(__file__).resolve().parent / "models" / "final_model_catboost.joblib"
 
