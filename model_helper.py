@@ -10,10 +10,10 @@ import pandas as pd
 # WAJIB di-import sebelum joblib.load: pipeline yang di-pickle menyimpan
 # referensi ke class CarAgeTransformer & FrequencyEncoder. Tanpa ini,
 # joblib.load akan raise AttributeError.
-from .custom_transformers import CarAgeTransformer, FrequencyEncoder  # noqa: F401
+from custom_transformers import CarAgeTransformer, FrequencyEncoder  # noqa: F401
 import joblib
 
-MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "final_model_catboost.joblib"
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "final_model_catboost.joblib"
 
 # Urutan/nama kolom persis seperti saat model di-training (X_train sebelum pipeline)
 FEATURE_ORDER = [

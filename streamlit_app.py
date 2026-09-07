@@ -6,7 +6,7 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from app.constants import (
+from constants import (
     MAKE_OPTS,
     MAKE_TYPE_MAP,
     GENERIC_TYPE_FALLBACK,
@@ -17,8 +17,8 @@ from app.constants import (
     GEAR_TYPE_OPTS,
     REGION_OPTS,
 )
-from app.utils.model_helper import load_model, predict_price
-from app.utils.validation import validate_input, RAW_REQUIRED_COLS
+from model_helper import load_model, predict_price
+from validation import validate_input, RAW_REQUIRED_COLS
 
 st.set_page_config(page_title="Used Car Price Predictor", page_icon="🚗", layout="centered")
 st.title("🚗 Used Car Price Prediction (Saudi Arabia)")
