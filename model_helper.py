@@ -16,7 +16,7 @@ import numpy as np
 
 from custom_transformers import CarAgeTransformer, FrequencyEncoder
 
-MODEL_PATH = Path(__file__).resolve().parent / "models" / "final_model_catboost.joblib"
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "used_car_price_model_xgboost.joblib"
 
 
 def load_model():
