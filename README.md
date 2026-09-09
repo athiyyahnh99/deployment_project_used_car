@@ -12,8 +12,8 @@ bukan repo terpisah.
 ```
 streamlit/
 ├── streamlit_app.py            # entry point, tabs Single Prediction & Batch Upload
-├── constants.py                 # daftar Make/Type/Region dkk dari data training
-├── custom_transformers.py       # WAJIB (CarAgeTransformer, FrequencyEncoder)
+├── constants.py                 # daftar Make/Type/Region dsb dari data training
+├── custom_transformers.py       # class CarAgeTransformer dan FrequencyEncoder
 ├── model_helper.py              # load_model() + predict_price()
 ├── validation.py                # validasi input sebelum prediksi
 ├── requirements.txt
@@ -30,12 +30,7 @@ streamlit/
 
 ## Catatan
 
-- Tema dark + aksen merah di screenshot referensi itu **bukan custom CSS** —
-  itu tema dark bawaan Streamlit (`primaryColor` default `#FF4B4B`), aktif
-  otomatis kalau browser/OS user dalam mode dark. App ini tidak butuh
-  konfigurasi tambahan untuk itu.
-- 11 kolom fitur mentah yang wajib ada: `Make, Type, Year, Origin, Color,
-  Options, Engine_Size, Fuel_Type, Gear_Type, Mileage, Region` — persis
+- 11 kolom fitur mentah yang wajib ada: `Make, Type, Year, Origin, Color, Options, Engine_Size, Fuel_Type, Gear_Type, Mileage, Region` — persis
   seperti `X_train` sebelum masuk pipeline di notebook.
 - Tab "Batch Upload (CSV)" menerima file dengan 11 kolom di atas, menambahkan
   kolom `predicted_price_sar`, dan bisa langsung di-download hasilnya.
