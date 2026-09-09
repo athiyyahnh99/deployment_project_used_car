@@ -3,18 +3,20 @@ model_helper.py
 
 load_model() + predict_price(), termasuk fix injeksi
 CarAgeTransformer & FrequencyEncoder ke sys.modules["__main__"]
-sebelum joblib.load() (untuk hindari AttributeError saat unpickle).
-
-Ganti dengan isi asli dari repo deployment_project_used_car.
+sebelum joblib.load() (untuk hindari AttributeError saat unpickle,
+karena model di-pickle dari notebook di mana kedua class ini
+didefinisikan di __main__).
 """
 
 import sys
+from pathlib import Path
+
 import joblib
 import numpy as np
 
 from custom_transformers import CarAgeTransformer, FrequencyEncoder
 
-MODEL_PATH = "models/final_model_catboost.joblib"
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "final_model_catboost.joblib"
 
 
 def load_model():
