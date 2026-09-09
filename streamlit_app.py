@@ -27,7 +27,7 @@ st.set_page_config(page_title="Used Car Price Predictor", page_icon="🚗", layo
 st.title("🚗 Used Car Price Prediction (Saudi Arabia)")
 st.caption(
     "Estimasi harga mobil bekas berdasarkan spesifikasi. "
-    "Model: XGBoost Regressor — MAE ≈ 13.849 SAR, RMSE ≈ 32.063 SAR, R² ≈ 0,804 (data test)."
+    "Model: XGBoost Regressor — MAE ≈ 13.728 SAR, RMSE ≈ 30.517 SAR, R² ≈ 0.822 (data test)."
 )
 
 with st.expander("ℹ️ Tentang aplikasi ini & cara kerjanya", expanded=True):
