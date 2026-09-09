@@ -20,12 +20,41 @@ from constants import (
 from model_helper import load_model, predict_price
 from validation import validate_input, RAW_REQUIRED_COLS
 
+MAE_SAR = 12184
+
 st.set_page_config(page_title="Used Car Price Predictor", page_icon="🚗", layout="centered")
+
 st.title("🚗 Used Car Price Prediction (Saudi Arabia)")
 st.caption(
     "Estimasi harga mobil bekas berdasarkan spesifikasi. "
     "Model: CatBoost Regressor — MAE ≈ 12.184 SAR, RMSE ≈ 23.512 SAR, R² ≈ 0,903 (data test)."
 )
+
+with st.expander("ℹ️ Tentang aplikasi ini & cara kerjanya", expanded=True):
+    st.markdown(
+        """
+**Apa ini?**
+Aplikasi ini memprediksi estimasi harga mobil bekas di pasar Arab Saudi berdasarkan
+spesifikasi mobil (merek, tipe, tahun, jarak tempuh, dll). Model dilatih dari data
+listing ± 8.000 mobil bekas yang di-scrape dari **Syarah.com** (2021).
+
+**Cara kerjanya**
+1. Kamu isi spesifikasi mobil (atau upload CSV untuk banyak mobil sekaligus).
+2. Data mentah dilewatkan ke *preprocessing pipeline* yang sama persis dengan yang
+   dipakai saat training — mengubah `Year` jadi usia mobil, meng-encode kolom
+   kategorikal (Make/Type/Region berdasarkan frekuensi kemunculan), menstabilkan
+   outlier & skewness pada `Mileage`, dsb.
+3. Data yang sudah diproses masuk ke model **CatBoost Regressor** yang sudah dilatih
+   sebelumnya (`final_model_catboost.joblib`).
+4. Model memprediksi harga dalam skala log (`log1p`), lalu hasilnya dikembalikan ke
+   skala SAR asli (`expm1`) sebelum ditampilkan sebagai rentang (± MAE model).
+
+**Keterbatasan**
+Model ini cenderung kurang akurat untuk mobil-mobil mewah / harga sangat tinggi,
+karena datanya didominasi mobil dengan harga menengah ke bawah. Anggap hasil
+prediksi sebagai *estimasi kasar*, bukan harga pasti.
+        """
+    )
 
 
 @st.cache_resource
@@ -49,10 +78,12 @@ with tab1:
     type_options = MAKE_TYPE_MAP.get(make, []) + [GENERIC_TYPE_FALLBACK]
 
     col1, col2 = st.columns(2)
+
     with col1:
         car_type = st.selectbox("Type", type_options)
         if car_type == GENERIC_TYPE_FALLBACK:
             car_type = st.text_input("Ketik Type manual", value=make)
+
         year = st.number_input(
             "Year",
             min_value=1980,
@@ -68,6 +99,7 @@ with tab1:
         origin = st.selectbox("Origin", ORIGIN_OPTS)
         color = st.selectbox("Color", COLOR_OPTS)
         options_level = st.selectbox("Options", OPTIONS_OPTS, index=1)
+
     with col2:
         engine_size = st.number_input(
             "Engine Size (L)", min_value=1.0, max_value=9.0, value=2.0, step=0.1
@@ -97,9 +129,11 @@ with tab1:
             st.error(msg)
         else:
             price = predict_price(model, raw_df)
+            low, high = max(price[0] - MAE_SAR, 0), price[0] + MAE_SAR
 
             st.divider()
-            st.metric("Estimasi Harga", f"{price[0]:,.0f} SAR")
+            st.metric("Estimasi Harga", f"{low:,.0f} – {high:,.0f} SAR")
+            st.caption(f"Titik tengah estimasi: {price[0]:,.0f} SAR (± MAE model)")
 
             with st.expander("Lihat data input"):
                 st.dataframe(raw_df)
@@ -112,6 +146,7 @@ with tab2:
     st.caption(f"Kolom wajib: {', '.join(RAW_REQUIRED_COLS)}")
 
     uploaded = st.file_uploader("Upload CSV", type="csv")
+
     if uploaded is not None:
         try:
             df = pd.read_csv(uploaded)
@@ -129,9 +164,11 @@ with tab2:
             else:
                 if st.button("Predict !", type="primary", key="predict_batch"):
                     price = predict_price(model, df)
+
                     result_df = df.copy()
                     result_df.insert(0, "row_id", range(1, len(result_df) + 1))
-                    result_df["predicted_price_sar"] = price.round(0)
+                    result_df["predicted_price_low_sar"] = (price - MAE_SAR).clip(lower=0).round(0)
+                    result_df["predicted_price_high_sar"] = (price + MAE_SAR).round(0)
 
                     st.success(f"Berhasil memprediksi {len(result_df)} baris data.")
                     st.dataframe(result_df)
