@@ -20,14 +20,14 @@ from constants import (
 from model_helper import load_model, predict_price
 from validation import validate_input, RAW_REQUIRED_COLS
 
-MAE_SAR = 12184
+MAE_SAR = 13849
 
 st.set_page_config(page_title="Used Car Price Predictor", page_icon="🚗", layout="centered")
 
 st.title("🚗 Used Car Price Prediction (Saudi Arabia)")
 st.caption(
     "Estimasi harga mobil bekas berdasarkan spesifikasi. "
-    "Model: CatBoost Regressor — MAE ≈ 12.184 SAR, RMSE ≈ 23.512 SAR, R² ≈ 0,903 (data test)."
+    "Model: XGBoost Regressor — MAE ≈ 13.849 SAR, RMSE ≈ 32.063 SAR, R² ≈ 0,804 (data test)."
 )
 
 with st.expander("ℹ️ Tentang aplikasi ini & cara kerjanya", expanded=True):
@@ -44,7 +44,7 @@ listing ± 8.000 mobil bekas yang di-scrape dari **Syarah.com** (2021).
    dipakai saat training — mengubah `Year` jadi usia mobil, meng-encode kolom
    kategorikal (Make/Type/Region berdasarkan frekuensi kemunculan), menstabilkan
    outlier & skewness pada `Mileage`, dsb.
-3. Data yang sudah diproses masuk ke model **CatBoost Regressor** yang sudah dilatih
+3. Data yang sudah diproses masuk ke model **XGBoost Regressor** yang sudah dilatih
    sebelumnya (`final_model_catboost.joblib`).
 4. Model memprediksi harga dalam skala log (`log1p`), lalu hasilnya dikembalikan ke
    skala SAR asli (`expm1`) sebelum ditampilkan sebagai rentang (± MAE model).
