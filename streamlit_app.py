@@ -39,8 +39,8 @@ spesifikasi mobil (merek, tipe, tahun, jarak tempuh, dll). Model dilatih dari da
 listing ± 8.000 mobil bekas yang di-scrape dari **Syarah.com** (2021).
 
 **Cara kerjanya**
-1. Kamu isi spesifikasi mobil (atau upload CSV untuk banyak mobil sekaligus).
-2. Data mentah dilewatkan ke *preprocessing pipeline* yang sama persis dengan yang
+1. Isi spesifikasi mobil (atau upload CSV untuk banyak mobil sekaligus).
+2. Data mentah diproses ke *preprocessing pipeline* yang sama persis dengan yang
    dipakai saat training — mengubah `Year` jadi usia mobil, meng-encode kolom
    kategorikal (Make/Type/Region berdasarkan frekuensi kemunculan), menstabilkan
    outlier & skewness pada `Mileage`, dsb.
