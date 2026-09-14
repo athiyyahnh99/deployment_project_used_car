@@ -17,7 +17,7 @@ from constants import (
     GEAR_TYPE_OPTS,
     REGION_OPTS,
 )
-from model_helper import load_model, predict_price
+from model_helper import load_model, predict_price, predict_price_range
 from validation import validate_input, RAW_REQUIRED_COLS
 
 MAE_SAR = 13849
@@ -163,13 +163,13 @@ with tab2:
                 st.error(msg)
             else:
                 if st.button("Predict !", type="primary", key="predict_batch"):
-                    price = predict_price(model, df)
-
+                    price, low, high = predict_price_range(model, df)
+                
                     result_df = df.copy()
                     result_df.insert(0, "row_id", range(1, len(result_df) + 1))
-                    result_df["predicted_price_low_sar"] = (price - MAE_SAR).clip(lower=0).round(0)
-                    result_df["predicted_price_high_sar"] = (price + MAE_SAR).round(0)
-
+                    result_df["predicted_price_sar"] = price.round(0)
+                    result_df["predicted_price_low_sar"] = low.round(0)
+                    result_df["predicted_price_high_sar"] = high.round(0)
                     st.success(f"Berhasil memprediksi {len(result_df)} baris data.")
                     st.dataframe(result_df)
 
