@@ -30,3 +30,10 @@ def predict_price(model, X):
     """X: DataFrame dengan 11 kolom fitur mentah, return harga dalam SAR."""
     log_pred = model.predict(X)
     return np.expm1(log_pred)
+    
+def predict_price_range(model, X, mae=12184):
+    """Return (harga, batas_bawah, batas_atas) dalam SAR, pakai margin MAE model."""
+    price = predict_price(model, X)
+    low = np.clip(price - mae, 0, None)
+    high = price + mae
+    return price, low, high
