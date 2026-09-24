@@ -87,7 +87,7 @@ COLOR_OPTS = [
     'Green',
     'Grey',
     'Navy',
-    'Oily',
+    'Olive',
     'Orange',
     'Red',
     'Silver',
