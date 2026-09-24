@@ -20,7 +20,7 @@ from constants import (
 from model_helper import load_model, predict_price, predict_price_range
 from validation import validate_input, RAW_REQUIRED_COLS
 
-MAE_SAR = 13849
+MAE_SAR = 13728
 
 st.set_page_config(page_title="Used Car Price Predictor", page_icon="🚗", layout="centered")
 
