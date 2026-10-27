@@ -186,7 +186,8 @@ def main() -> None:
     except (FileNotFoundError, KeyError, AssertionError) as err:
         st.error(f"Model gagal dimuat: {err}")
         st.stop()
-
+        
+    render_about(artifact["test_metrics"]["MAPE"])
     values = render_form(artifact)
 
     if st.button("Estimasi Harga", type="primary", use_container_width=True):
