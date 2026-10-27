@@ -138,11 +138,13 @@ def render_form(artifact: dict) -> dict:
 
 
 def render_result(pred: float, lower: float, upper: float, mape: float) -> None:
-    """Menampilkan estimasi harga dan rentangnya."""
+    """Menampilkan rentang harga sebagai hasil utama, estimasi titik sebagai acuan."""
     st.subheader("Hasil Estimasi")
-    st.metric("Estimasi Harga Pasar", f"{pred:,.0f} SAR")
-    st.write(f"Rentang harga: **{lower:,.0f} – {upper:,.0f} SAR**")
-    st.caption(f"Rentang dihitung dari estimasi ± {mape:.1%} (MAPE model pada data test).")
+    st.metric("Perkiraan Harga Pasar", f"{lower:,.0f} – {upper:,.0f} SAR")
+    st.caption(
+        f"Titik tengah estimasi: {pred:,.0f} SAR. "
+        f"Rentang = estimasi ± {mape:.1%} (MAPE model pada data test)."
+    )
 
 
 def main() -> None:
