@@ -99,6 +99,35 @@ def ordered(values: list[str], preferred: list[str]) -> list[str]:
 # ----------------------------------------------------------------------------
 # Tampilan
 # ----------------------------------------------------------------------------
+def render_about(mape: float) -> None:
+    """Menampilkan penjelasan aplikasi yang bisa dibuka-tutup."""
+    with st.expander("ℹ️ Tentang aplikasi ini", expanded=True):
+        st.markdown(
+            f"""
+**Apa fungsi aplikasi ini?**
+Aplikasi ini memperkirakan harga pasar mobil bekas di Arab Saudi berdasarkan
+spesifikasinya. Model dilatih dari data listing Syarah.com tahun 2021 dan
+dirancang sebagai acuan harga awal sebelum mobil diinspeksi.
+
+**Cara pakai**
+1. Pilih merek, lalu model mobil (pilihan model menyesuaikan merek).
+2. Isi tahun, kelengkapan, transmisi, bahan bakar, asal, warna, dan wilayah.
+3. Isi jarak tempuh dan kapasitas mesin. Kalau tidak tahu, centang
+   "tidak diketahui" dan model akan memakai nilai tengah dari mobil sejenis.
+4. Klik **Estimasi Harga**.
+
+**Cara membaca hasil**
+Hasil ditampilkan sebagai rentang harga, yaitu estimasi ± {mape:.1%}.
+Angka {mape:.1%} adalah rata-rata selisih prediksi model dengan harga asli
+pada data uji (MAPE). Harga asli sebagian mobil bisa berada di luar rentang ini.
+
+**Keterbatasan**
+- Model tidak mengetahui kondisi fisik, riwayat servis, atau riwayat kecelakaan mobil.
+- Estimasi untuk model mobil yang jarang muncul di data kurang akurat.
+- Harga mengacu pada kondisi pasar tahun 2021.
+"""
+        )
+        
 def render_form(artifact: dict) -> dict:
     """Menampilkan input fitur mobil dan mengembalikan nilainya."""
     cats = artifact["categories"]
