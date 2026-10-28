@@ -105,11 +105,13 @@ def render_about(mape: float) -> None:
         st.markdown(
             f"""
 **Apa fungsi aplikasi ini?**
+
 Aplikasi ini memperkirakan harga pasar mobil bekas di Arab Saudi berdasarkan
 spesifikasinya. Model dilatih dari data listing Syarah.com tahun 2021 dan
 dirancang sebagai acuan harga awal sebelum mobil diinspeksi.
 
 **Cara pakai**
+
 1. Pilih merek, lalu model mobil (pilihan model menyesuaikan merek).
 2. Isi tahun, kelengkapan, transmisi, bahan bakar, asal, warna, dan wilayah.
 3. Isi jarak tempuh dan kapasitas mesin. Kalau tidak tahu, centang
@@ -117,11 +119,13 @@ dirancang sebagai acuan harga awal sebelum mobil diinspeksi.
 4. Klik **Estimasi Harga**.
 
 **Cara membaca hasil**
+
 Hasil ditampilkan sebagai rentang harga, yaitu estimasi ± {mape:.1%}.
 Angka {mape:.1%} adalah rata-rata selisih prediksi model dengan harga asli
 pada data uji (MAPE). Harga asli sebagian mobil bisa berada di luar rentang ini.
 
 **Keterbatasan**
+
 - Model tidak mengetahui kondisi fisik, riwayat servis, atau riwayat kecelakaan mobil.
 - Estimasi untuk model mobil yang jarang muncul di data kurang akurat.
 - Harga mengacu pada kondisi pasar tahun 2021.
@@ -175,6 +179,94 @@ def render_result(pred: float, lower: float, upper: float, mape: float) -> None:
         f"Rentang = estimasi ± {mape:.1%} (MAPE model pada data test)."
     )
 
+def validate_csv(df: pd.DataFrame, artifact: dict) -> pd.DataFrame:
+    """Memvalidasi CSV upload dan menyiapkan kolom fitur untuk prediksi.
+
+    Args:
+        df: Data hasil upload. Kolom tambahan (mis. Price, Link) dibiarkan.
+        artifact: Artefak model berisi daftar fitur dan kategori.
+
+    Returns:
+        DataFrame fitur (urutan sesuai training) untuk baris yang valid.
+
+    Raises:
+        ValueError: Jika ada kolom fitur yang hilang atau tidak ada baris valid.
+    """
+    features = artifact["features"]
+    missing = [c for c in features if c not in df.columns]
+    if missing:
+        raise ValueError(f"Kolom berikut tidak ada di CSV: {missing}")
+
+    X = df[features].copy()
+    for col in ["Year", "Mileage", "Engine_Size"]:
+        X[col] = pd.to_numeric(X[col], errors="coerce")
+
+    X = X[X["Year"].notna()]
+    if X.empty:
+        raise ValueError("Tidak ada baris dengan Year yang valid.")
+    assert list(X.columns) == features, "Urutan kolom tidak sesuai"
+    return X
+
+
+def unseen_categories(X: pd.DataFrame, categories: dict) -> dict:
+    """Menghitung nilai kategori yang tidak pernah muncul di data train."""
+    result = {}
+    for col, known in categories.items():
+        n = int((~X[col].isin(known) & X[col].notna()).sum())
+        if n:
+            result[col] = n
+    return result
+
+
+def render_batch(artifact: dict) -> None:
+    """Menampilkan upload CSV, prediksi massal, dan tombol download hasil."""
+    features = artifact["features"]
+    mape = artifact["test_metrics"]["MAPE"]
+
+    st.write("Upload file CSV berisi kolom: " + ", ".join(f"`{c}`" for c in features))
+    st.download_button(
+        "Download template CSV",
+        pd.DataFrame(columns=features).to_csv(index=False),
+        file_name="template_input.csv",
+        mime="text/csv",
+    )
+
+    file = st.file_uploader("Upload CSV", type="csv")
+    if file is None:
+        return
+
+    df = pd.read_csv(file)
+    try:
+        X = validate_csv(df, artifact)
+    except ValueError as err:
+        st.error(str(err))
+        return
+
+    skipped = len(df) - len(X)
+    if skipped:
+        st.warning(f"{skipped} baris dilewati karena Year kosong atau tidak valid.")
+    unseen = unseen_categories(X, artifact["categories"])
+    if unseen:
+        st.warning(f"Ada nilai kategori yang tidak dikenal model (jumlah baris): {unseen}. "
+                   "Estimasi untuk baris tersebut kurang akurat.")
+
+    pred = artifact["model"].predict(X)
+    result = df.loc[X.index].copy()
+    result["Estimasi"] = pred.round(0)
+    result["Batas_Bawah"] = (pred * (1 - mape)).round(0)
+    result["Batas_Atas"] = (pred * (1 + mape)).round(0)
+    assert result["Estimasi"].gt(0).all(), "Ada prediksi tidak valid"
+
+    st.success(f"{len(result):,} mobil berhasil diestimasi.")
+    st.dataframe(result, use_container_width=True)
+    st.download_button(
+        "Download hasil estimasi",
+        result.to_csv(index=False),
+        file_name="hasil_estimasi.csv",
+        mime="text/csv",
+        type="primary",
+    )
+
 
 def main() -> None:
     st.set_page_config(page_title="Estimasi Harga Mobil Bekas", page_icon="🚗", layout="centered")
@@ -188,12 +280,17 @@ def main() -> None:
         st.stop()
         
     render_about(artifact["test_metrics"]["MAPE"])
-    values = render_form(artifact)
+    tab_single, tab_batch = st.tabs(["Satu Mobil", "Upload CSV"])
 
-    if st.button("Estimasi Harga", type="primary", use_container_width=True):
-        X = build_input(values, artifact["features"])
-        mape = artifact["test_metrics"]["MAPE"]
-        render_result(*predict_with_range(artifact["model"], X, mape), mape=mape)
+    with tab_single:
+        values = render_form(artifact)
+        if st.button("Estimasi Harga", type="primary", use_container_width=True):
+            X = build_input(values, artifact["features"])
+            mape = artifact["test_metrics"]["MAPE"]
+            render_result(*predict_with_range(artifact["model"], X, mape), mape=mape)
+
+    with tab_batch:
+        render_batch(artifact)
 
 
 if __name__ == "__main__":
