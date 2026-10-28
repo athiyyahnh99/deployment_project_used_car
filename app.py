@@ -258,7 +258,18 @@ def render_batch(artifact: dict) -> None:
     assert result["Estimasi"].gt(0).all(), "Ada prediksi tidak valid"
 
     st.success(f"{len(result):,} mobil berhasil diestimasi.")
-    st.dataframe(result, use_container_width=True)
+    result_cols = ["Batas_Bawah", "Batas_Atas", "Estimasi"]
+    front = ["Make", "Type", "Year"] + result_cols
+    view = result[front + [c for c in result.columns if c not in front]]
+
+    st.dataframe(
+        view,
+        use_container_width=True,
+        column_config={
+            col: st.column_config.NumberColumn(col.replace("_", " ") + " (SAR)", format="localized")
+            for col in result_cols
+        },
+    )
     st.download_button(
         "Download hasil estimasi",
         result.to_csv(index=False),
